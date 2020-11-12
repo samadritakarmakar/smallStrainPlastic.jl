@@ -1,0 +1,8 @@
+name = "SmallStrainPlastic"
+uuid = "b5fb8cbd-b1c6-42ae-8cde-a9279db76f58"
+authors = ["sam <samadritakarmakar@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Tensors = "48a634ad-e948-5137-8d70-aa71f2a747f4"
