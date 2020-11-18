@@ -29,7 +29,7 @@ end
 This function updates the StateDict according to the passed data of ϵᵖ and α for a specific element number and
 an integration point within the given element.
 
-    updateStateDict!(ϵᵖ, α, stateDict, elementNo, integrationPtNo)
+    updateStateDict!(ϵᵖ, α, stateDict, elementNo, integrationPt)
 """
 function updateStateDict!(ϵᵖ::Array{Float64,1}, α::Array{Float64,1}, stateDict::Dict{Tuple{Int64, Int64}, State},
     elementNo::Int64= 1, integrationPt::Int64=1)

@@ -1,4 +1,4 @@
-"""A plasticity new plasticity model can be defined by defininf the following functions:
+"""A plasticity new plasticity model can be defined by defining the following functions:
 
 Yield Function:- 𝒇!
 
@@ -6,7 +6,7 @@ The partial of Yield Function with respect to stress, ∂𝒇/∂𝛔:- ∂𝒇_
 
 The partial of Yield Function with respect to hardening variable, ∂𝒇/∂𝐪: ∂𝒇_∂𝐪!
 
-The function in the flow rule for the plastic strain, 𝛆̇ᵖ = λ̇  𝚯(𝛔, 𝐪) :- 𝚯! #Removed
+The function in the flow rule for the plastic strain, 𝛆̇ᵖ = λ̇  𝚯(𝛔, 𝐪) :- 𝚯!
 
 The partial of plastic strain flow rule function with respect to stress, ∂𝚯/∂𝛔:- ∂𝚯_∂𝛔!
 
@@ -21,11 +21,10 @@ The partial of plastic strain flow rule function with respect to hardening, ∂�
 If the evolution of the hardening variable 𝐪̇ is defined as 𝐪̇ = -𝓗(𝛂), then the function it is
 dependent on can be written as:- 𝓗!
 
-If the hardening variable 𝐪̇ is defined as 𝐪̇ = -𝓗(𝛂), then an equivalent to stiffness tensor
-ℂ = ∂𝛔/∂𝛆ᵉ can defined as 𝔻 = -∂𝐪/∂𝛂 = ∂𝓗(𝛂)/∂𝐪 :- 𝔻!
+If the hardening variable 𝐪̇ is defined as 𝐪̇ = -𝓗(𝛂), then an equivalent to stiffness tensor defined as
+ℂ = ∂𝛔/∂𝛆ᵉ, we can defined as 𝔻 = -∂𝐪/∂𝛂 = ∂𝓗(𝛂)/∂𝐪 :- 𝔻!
 
-For ease of use, defining a function that saves the stiffness tensor is also made available :- ℂ
- ℂ!
+For ease of use, defining a function that saves the stiffness tensor is also made available :- ℂ!
 """
 struct PlasticModel
     𝒇::Function
@@ -103,4 +102,9 @@ struct ModelParams{params_f, params_∂f_∂σ, params_∂f_∂q, params_Θ,
     H::params_H
     C::params_C
     D::params_D
+end
+
+mutable struct tolerances
+    f::Float64
+    R::Float64
 end

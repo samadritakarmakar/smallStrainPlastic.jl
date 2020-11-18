@@ -23,7 +23,7 @@ export checkPlasticState!
 ##from denseJacobian
 export denseJacobian!, denseJacobian
 ##from TensorTools
-export createVoigtElasticTensor, getProjectionTensor4
+export createVoigtElasticTensor, getProjectionTensor4, get_𝒑_𝒒, get_𝒆_𝒆ₛ
 
 #From plasticModels/
 ##from j2.jl

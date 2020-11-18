@@ -18,3 +18,21 @@ end
 function getProjectionTensor4()
     return SymmetricTensor{4,3,Float64}(ProjectionTensor4)
 end
+
+function get_𝒑_𝒒(σ_voigt)
+    σ::SymmetricTensor{2,3, Float64, 6} = deepcopy(Tensors.fromvoigt(SymmetricTensor{2,3}, σ_voigt))
+    𝒑::Float64 = tr(σ)
+    #Deviatoric Stress
+    σ -= 1.0/3.0*𝒑*one(SymmetricTensor{2,3})
+    𝒒::Float64 = sqrt(3.0/2.0)*norm(σ)
+    return 𝒑, 𝒒
+end
+
+function get_𝒆_𝒆ₛ(ϵ)
+    𝜺::SymmetricTensor{2,3, Float64, 6} = deepcopy(Tensors.fromvoigt(SymmetricTensor{2,3}, ϵ))
+    𝒆::Float64 = tr(𝜺)
+    #Deviatoric Stress
+    𝜺 -= 1.0/3.0*𝒆*one(SymmetricTensor{2,3})
+    𝒆ₛ::Float64 = sqrt(2.0/3.0)*norm(𝜺)
+    return 𝒆, 𝒆ₛ
+end

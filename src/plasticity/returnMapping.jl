@@ -27,10 +27,6 @@ function checkPlasticState!(plasticVars::PlasticVars, model::PlasticModel,
     end
 end
 
-function findResidual(R::Array{Float64, 1}, plasticVars::PlasticVars, model::PlasticModel,
-    params::ModelParams)
-
-end
 
 function initReturnMappingVars(model::PlasticModel)
     ∂f_∂σ::Array{Float64, 1} = zeros(model.ϵSize)
@@ -63,7 +59,6 @@ function updateReturnMappingVars!(∂f_∂σ::Array{Float64, 1},
     model.∂𝚯_∂𝛔!(∂Θ_∂σ, plasticVars.σ_voigt, plasticVars.q, params)
     model.∂𝚯_∂𝐪!(∂Θ_∂q, plasticVars.σ_voigt, plasticVars.q, params)
     model.𝐡!(h, plasticVars.σ_voigt, plasticVars.q, params)
-    model.𝓗!(plasticVars.H, plasticVars.σ_voigt, plasticVars.q, plasticVars.α, params)
     model.∂𝐡_∂𝛔!(∂h_∂σ, plasticVars.σ_voigt, plasticVars.q, params)
     model.∂𝐡_∂𝐪!(∂h_∂q, plasticVars.σ_voigt, plasticVars.q, params)
     model.ℂ!(plasticVars.C, plasticVars.σ_voigt, plasticVars.q, params)
@@ -71,6 +66,36 @@ function updateReturnMappingVars!(∂f_∂σ::Array{Float64, 1},
     return nothing
 end
 
+"""This function is responsible for executing the return mapping algorithm. It
+does so by calculating the evolution of the plastic strain using the Closest Point Projection
+method. The following formulations are used
+
+Here's an equation:
+
+``d(\\Delta\\lambda) = \\frac{f^k - \\begin{bmatrix}\\partial f^k/\\partial \\sigma & \\partial f^k/ \\partial q\\end{bmatrix}\\begin{bmatrix}A\\end{bmatrix}\\begin{bmatrix} R \\end{bmatrix}}
+{\\begin{bmatrix}\\partial f^k/\\partial \\sigma & \\partial f^k/ \\partial q\\end{bmatrix}\\begin{bmatrix}A\\end{bmatrix}\\begin{bmatrix}\\Theta \\\\ h \\end{bmatrix}}``
+
+where:
+
+``\\begin{bmatrix}R\\end{bmatrix} = -\\begin{bmatrix} \\epsilon^p_{n+1} \\\\ \\alpha_{n+1} \\end{bmatrix}
++\\begin{bmatrix} \\epsilon^p_{n} \\\\ \\alpha_{n} \\end{bmatrix}
++\\Delta\\lambda\\begin{bmatrix} \\Theta(\\sigma_{n+1}, q_{n+1}) \\\\ h(\\sigma_{n+1}, q_{n+1}) \\end{bmatrix}``
+
+``\\begin{bmatrix}A\\end{bmatrix}^{-1} =
+\\begin{bmatrix} \\bm{C}^{-1} + \\Delta\\lambda \\frac{\\partial \\Theta}{\\partial\\sigma_{n+1}} &
+\\Delta\\lambda \\frac{\\partial \\Theta}{\\partial q_{n+1}}
+\\\\ \\Delta\\lambda \\frac{\\partial h}{\\partial\\sigma_{n+1}} &
+\\bm{D}^{-1} + \\Delta\\lambda \\frac{\\partial h}{\\partial q_{n+1}}
+\\end{bmatrix}``
+
+The Strain 𝛆ᵖ and the internal variable 𝛂 are updated as,
+
+``\\begin{bmatrix}\\Delta \\epsilon^p \\\\ \\Delta \\alpha \\end{bmatrix} =
+\\begin{bmatrix}\\bm{C}^{-1} & 0 \\\\ 0 & \\bm{D}^{-1} \\end{bmatrix}
+\\begin{bmatrix}A\\end{bmatrix}
+\\begin{bmatrix}\\Theta \\\\ h \\end{bmatrix}
+d(\\Delta\\lambda)``
+"""
 function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
     params::ModelParams)
 
@@ -80,16 +105,17 @@ function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
     Θ::Array{Float64, 1}, h::Array{Float64, 1},
     R::Array{Float64, 1}, A::Array{Float64, 2},
     f::Float64, Δλ::Float64, dΔλ::Float64 = initReturnMappingVars(model)
-    ϵᵖα_n1::Array{Float64, 1} = [plasticVars.ϵᵖ; plasticVars.α]
-    while (norm(f)>1e-12)#|| norm(R)/norm(plasticVars.ϵ)>1e-7)
 
-        #Update Return mapping internal arrays
-        updateReturnMappingVars!(∂f_∂σ, ∂f_∂q, ∂Θ_∂σ, ∂Θ_∂q, ∂h_∂σ, ∂h_∂q, Θ, h, plasticVars, model, params)
-        #Update Residual
-        plasticVars.σ_voigt .= plasticVars.C*(plasticVars.ϵ - plasticVars.ϵᵖ)
+    ϵᵖα_n1::Array{Float64, 1} = [plasticVars.ϵᵖ; plasticVars.α]
+    while (norm(f)>1e-8 || norm(R)/norm(plasticVars.ϵ)>1e-3)
+        plasticVars.σ_voigt .= plasticVars.C*(plasticVars.ϵ - ϵᵖα_n1[1:model.ϵSize])
+        model.𝓗!(plasticVars.H, plasticVars.σ_voigt, plasticVars.q, ϵᵖα_n1[model.ϵSize+1:model.ϵSize+model.αSize], params)
         plasticVars.q .= -plasticVars.H
         f = model.𝒇(plasticVars.σ_voigt, plasticVars.q, params)
+        #Update Return mapping internal arrays
+        updateReturnMappingVars!(∂f_∂σ, ∂f_∂q, ∂Θ_∂σ, ∂Θ_∂q, ∂h_∂σ, ∂h_∂q, Θ, h, plasticVars, model, params)
         Θh::Array{Float64, 1} = [Θ; h]
+        #Update Residual
         R .= -ϵᵖα_n1 + [plasticVars.ϵᵖ; plasticVars.α] + Δλ*Θh
         #update matrix [A]
         A[1:model.ϵSize,1:model.ϵSize] .= inv(plasticVars.C) + Δλ*∂Θ_∂σ
@@ -101,10 +127,11 @@ function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
         fA = [∂f_∂σ..., ∂f_∂q...]'*A
         dΔλ = (f .- fA*R)/(fA*Θh)
         Δλ += dΔλ
-        plasticVars.ϵᵖ .= ϵᵖα_n1[1:model.ϵSize]
-        plasticVars.α .= ϵᵖα_n1[model.ϵSize+1:model.ϵSize+model.αSize]
-        C_D_inv::Array{Float64, 2} = [inv(plasticVars.C) zeros(model.ϵSize, model.αSize); zeros(model.αSize, model.ϵSize) inv(plasticVars.D)]
+        C_D_inv::Array{Float64, 2} = [inv(plasticVars.C) zeros(model.ϵSize, model.αSize);
+                                        zeros(model.αSize, model.ϵSize) inv(plasticVars.D)]
         ϵᵖα_n1 +=C_D_inv*A*(R .+ dΔλ*Θh)
-        println("f = ", f, " norm(R)/norm(ϵ) = ", norm(R)/norm(plasticVars.ϵ), " dΔλ = ", dΔλ)
+        println("f = ", f, " norm(R)/norm(plasticVars.ϵ) = ", norm(R)/norm(plasticVars.ϵ), " dΔλ = ", dΔλ)
     end
+    plasticVars.ϵᵖ .= ϵᵖα_n1[1:model.ϵSize]
+    plasticVars.α .= ϵᵖα_n1[model.ϵSize+1:model.ϵSize+model.αSize]
 end
