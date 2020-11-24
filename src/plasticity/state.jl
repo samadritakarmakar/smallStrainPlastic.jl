@@ -45,3 +45,15 @@ This function creates a Dictionary of type State to store the state of the mater
 function createStateDict()
     return Dict{Tuple{Int64, Int64}, State}()
 end
+
+function updateStateDict!(stateDict::Dict{Tuple{Int64, Int64}, State},
+    stateDictBuffer::Dict{Tuple{Int64, Int64}, State})
+    buffKeys = keys(SmallStrainPlastic.stateDictBuffer)
+    for buffKey ∈ collect(buffKeys)
+        stateDict[buffKey...] = stateDictBuffer[buffKey...]
+    end
+end
+
+function updateStateDict4rmBuffer()
+    updateStateDict!(stateDict, stateDictBuffer)
+end

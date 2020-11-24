@@ -77,6 +77,7 @@ mutable struct PlasticVars
     σ_voigt::Array{Float64, 1}
     ϵ::Array{Float64, 1}
     ϵᵖ::Array{Float64, 1}
+    𝒆ᵖ::Float64
     H::Array{Float64, 1}
     q::Array{Float64, 1}
     α::Array{Float64, 1}
@@ -97,11 +98,12 @@ function initPlasticVars(model::PlasticModel)
     σ_voigt::Array{Float64, 1} = zeros(ϵSize)
     ϵ::Array{Float64, 1} = zeros(ϵSize)
     ϵᵖ::Array{Float64, 1} = zeros(ϵSize)
+    𝒆ᵖ::Float64 = 0.0
     H::Array{Float64, 1} = zeros(αSize)
     q::Array{Float64, 1} = zeros(αSize)
     α::Array{Float64, 1} = zeros(αSize)
     Cᵀ::Array{Float64, 2} = zeros(ϵSize, ϵSize)
-    return PlasticVars(C, D, σ_voigt, ϵ, ϵᵖ, H, q, α, Cᵀ)
+    return PlasticVars(C, D, σ_voigt, ϵ, ϵᵖ, 𝒆ᵖ, H, q, α, Cᵀ)
 end
 
 """Abstract type Parameters to make it easy to pass variables to functions"""
@@ -128,7 +130,8 @@ struct ModelParams{params_f, params_∂f_∂σ, params_∂f_∂q, params_Θ,
     D::params_D
 end
 
-mutable struct tolerances
+mutable struct Tolerance
     f::Float64
     R::Float64
+    maxIter::Int64
 end

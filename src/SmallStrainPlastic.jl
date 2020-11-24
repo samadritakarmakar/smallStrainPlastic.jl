@@ -11,11 +11,13 @@ include("plasticModels/j2.jl")
 
 #From plasticity/plasticModel.jl
 export PlasticModel, PlasticVars, initPlasticVars
-export Parameters, ModelParams
+export Parameters, ModelParams, tolerance
+tolerance = Tolerance(1e-8, 1e-8, 15)
 #From plasticity/
 ##from state.jl
-export State, getState!, updateStateDict!, createStateDict
+export State, getState!, updateStateDict!, createStateDict, updateStateDict4rmBuffer
 stateDict = createStateDict()
+stateDictBuffer = createStateDict()
 ##from returnMapping.jl
 export checkPlasticState!
 
@@ -23,7 +25,7 @@ export checkPlasticState!
 ##from denseJacobian
 export denseJacobian!, denseJacobian
 ##from TensorTools
-export createVoigtElasticTensor, getProjectionTensor4, get_𝒑_𝒒, get_𝒆_𝒆ₛ
+export createVoigtElasticTensor, getProjectionTensor4, get_σₘ_𝐬, get_ϵₘ_𝒆
 
 #From plasticModels/
 ##from j2.jl
