@@ -23,7 +23,7 @@ end
 function ∂𝒇_∂𝐪_j2!(∂f_∂q::Array{Float64, 1}, σ_voigt::Array{Float64, 1},
     q::Array{Float64, 1},   plasticVars::PlasticVars, params::ModelParams)
     f::Float64 = 𝒇_j2(σ_voigt, q, plasticVars, params)
-    ∂f_∂q[1,1] = params.H == 0.0 ? 0.0 : 1.0
+    ∂f_∂q[1,1] = 1.0#f <= 0.0 ? 0.0 : 1.0
     return ∂f_∂q
 end
 
@@ -59,14 +59,14 @@ function ∂𝚯_∂𝐪_j2!(∂Θ_∂q::Array{Float64, 2}, σ_voigt::Array{Floa
     return ∂Θ_∂q
 end
 
-#=function 𝐡_j2!(h::Array{Float64, 1}, σ_voigt::Array{Float64, 1},
+function 𝐡_j2!(h::Array{Float64, 1}, σ_voigt::Array{Float64, 1},
     q::Array{Float64, 1}, plasticVars::PlasticVars, params::ModelParams)
 
-    h[1] = params.H == 0.0 ? 0.0 : 1.0
+    h[1] = 1.0
     return h
-end=#
+end
 
-𝐡_j2! = ∂𝒇_∂𝐪_j2!
+#𝐡_j2! = ∂𝒇_∂𝐪_j2!
 
 function ∂𝐡_∂𝛔_j2!(∂h_∂σ::Array{Float64, 2}, σ_voigt::Array{Float64, 1},
     q::Array{Float64, 1},  plasticVars::PlasticVars, params::ModelParams)
@@ -102,7 +102,7 @@ end
 function 𝔻_j2!(D::Array{Float64,2}, σ_voigt::Array{Float64, 1},
     q::Array{Float64, 1},  plasticVars::PlasticVars, params::ModelParams)
 
-    D[1,1] = params.H == 0.0 ? 1.0 : params.H
+    D[1,1] = params.H != 0.0 ? params.H : 1.0
     return D
 end
 
