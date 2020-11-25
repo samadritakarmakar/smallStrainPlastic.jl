@@ -6,7 +6,7 @@ function testJ2()
     ν = 0.3
     plasticVars = SmallStrainPlastic.initPlasticVars(SmallStrainPlastic.j2Model)
     plasticVars.C = SmallStrainPlastic.createVoigtElasticTensor(E, ν)
-    params_J2 = SmallStrainPlastic.initParams_j2(σ_y, 200e3)
+    params_J2 = SmallStrainPlastic.initParams_j2(σ_y, 0.0)
     σₘArray::Array{Float64, 1} = zeros(0)
     𝐬Array::Array{Float64, 1} = zeros(0)
     ϵₘArray::Array{Float64, 1} = zeros(0)

@@ -102,7 +102,7 @@ end
 function 𝔻_j2!(D::Array{Float64,2}, σ_voigt::Array{Float64, 1},
     q::Array{Float64, 1},  plasticVars::PlasticVars, params::ModelParams)
 
-    D[1,1] = params.H
+    D[1,1] = params.H != 0.0 ? params.H : 1.0
     return D
 end
 
