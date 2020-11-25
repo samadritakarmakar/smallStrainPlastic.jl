@@ -12,8 +12,8 @@ include("plasticModels/j2.jl")
 #From plasticity/plasticModel.jl
 export PlasticModel, PlasticVars, initPlasticVars
 export Parameters, ModelParams, tolerance
-tolerance = Tolerance(1e-8, 1e-8, 15)
-#From plasticity/
+tolerance = Tolerance(1e-8, 1e-8, 20)
+#From plasticity
 ##from state.jl
 export State, getState!, updateStateDict!, createStateDict, updateStateDict4rmBuffer
 stateDict = createStateDict()

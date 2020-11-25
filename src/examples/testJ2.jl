@@ -6,23 +6,26 @@ function testJ2()
     ν = 0.3
     plasticVars = SmallStrainPlastic.initPlasticVars(SmallStrainPlastic.j2Model)
     plasticVars.C = SmallStrainPlastic.createVoigtElasticTensor(E, ν)
-    params_J2 = SmallStrainPlastic.initParams_j2(σ_y, 0.0)
+
+    params_J2 = SmallStrainPlastic.initParams_j2(σ_y, 20.0e3)
+
     σₘArray::Array{Float64, 1} = zeros(0)
     𝐬Array::Array{Float64, 1} = zeros(0)
     ϵₘArray::Array{Float64, 1} = zeros(0)
     𝒆Array::Array{Float64, 1} = zeros(0)
     iArray::Array{Int64, 1} = zeros(0)
     SmallStrainPlastic.tolerance.R = 1e-8
-    for i ∈ 1:900
-        #println("ϵ = ", plasticVars.ϵ, " ϵᵖ = ", plasticVars.ϵᵖ, " α = ", plasticVars.α)
-        if (i<=200)
-            plasticVars.ϵ[1] += 1e-5
-        elseif (i>200 && i<=550)
-            plasticVars.ϵ[1] -= 1e-5
+    SmallStrainPlastic.tolerance.maxIter = 2
+    for i ∈ 1:90
+        if (i<=20)
+            plasticVars.ϵ[1] += 1e-4
+        elseif (i>20 && i<=55)
+            plasticVars.ϵ[1] -= 1e-4
         else
-            plasticVars.ϵ[1] += 1e-5
+            plasticVars.ϵ[1] += 1e-4
         end
         SmallStrainPlastic.checkPlasticState!(plasticVars, SmallStrainPlastic.j2Model, params_J2, 1, 1)
+        println(" ϵᵖ = ", plasticVars.ϵᵖ, " α = ", plasticVars.α)
         σₘ, 𝐬 = SmallStrainPlastic.get_σₘ_𝐬(plasticVars.σ_voigt)
         push!(σₘArray, σₘ)
         push!(𝐬Array, 𝐬)
