@@ -135,7 +135,7 @@ function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
                                         zeros(model.αSize, model.ϵSize) (plasticVars.D)])
         ϵᵖα_n1 +=C_D_inv*A*(R + dΔλ*Θh)
         iter += 1
-        #println("f = ", f, " norm(R) = ", norm(R), " dΔλ = ", dΔλ)
+        println("f = ", f, " norm(R) = ", norm(R), " dΔλ = ", dΔλ)
     end
     if iter > tolerance.maxIter
         @warn "Return Mapping Exited without convergence"
