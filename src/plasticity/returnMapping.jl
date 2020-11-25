@@ -128,6 +128,8 @@ function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
         A[model.ϵSize+1:model.ϵSize+model.αSize, model.ϵSize+1:model.ϵSize+model.αSize] =
         inv(plasticVars.D)+ Δλ*∂h_∂q
 
+        A = inv(A)
+        
         fA = [∂f_∂σ..., ∂f_∂q...]'*A
         dΔλ = (f - fA*R)/(fA*Θh)
         Δλ += dΔλ
