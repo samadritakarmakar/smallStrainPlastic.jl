@@ -16,7 +16,7 @@ function testJ2()
     iArray::Array{Int64, 1} = zeros(0)
     #σ_buffer = zeros(6)
     #ϵ_buffer = zeros(6)
-    for i ∈ 1:200
+    for i ∈ 1:820
         if (i<=200)
             plasticVars.ϵ[1] += 1e-5
         elseif (i>200 && i<=550)
