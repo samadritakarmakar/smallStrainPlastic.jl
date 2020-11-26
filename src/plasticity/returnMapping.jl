@@ -65,6 +65,7 @@ function updateReturnMappingVars!(∂f_∂σ::Array{Float64, 1},
     return nothing
 end
 
+
 """This function is responsible for executing the return mapping algorithm. It
 does so by calculating the evolution of the plastic strain using the Closest Point Projection
 method. The following formulations are used
@@ -105,18 +106,19 @@ function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
         ϵᵖα_n1::Array{Float64, 1} = [plasticVars.ϵᵖ; plasticVars.α]
         updateReturnMappingVars!(∂f_∂σ, ∂f_∂q, ∂Θ_∂σ, ∂Θ_∂q, ∂h_∂σ, ∂h_∂q, Θ, h, plasticVars, model, params)
         Θh::Array{Float64, 1} = [Θ; h]
+        fA = [zeros(model.ϵSize)' zeros(model.αSize)']
         #Update Residual
         R = -ϵᵖα_n1 + [plasticVars.ϵᵖ; plasticVars.α] + Δλ*Θh
-
-        while ((norm(f)> tolerance.f|| norm(R)> tolerance.R) && iter<=tolerance.maxIter)
+        #println("In Plastic Regime")
+        while ((f> tolerance.f|| norm(R)> tolerance.R) && iter<=tolerance.maxIter)
             A[1:model.ϵSize,1:model.ϵSize] = inv(plasticVars.C) + Δλ*∂Θ_∂σ
             A[model.ϵSize+1:model.ϵSize+model.αSize, 1:model.ϵSize] = Δλ*∂h_∂σ
             A[1:model.ϵSize, model.ϵSize+1:model.ϵSize+model.αSize] = Δλ*∂Θ_∂q
             A[model.ϵSize+1:model.ϵSize+model.αSize, model.ϵSize+1:model.ϵSize+model.αSize] =
             inv(plasticVars.D)+ Δλ*∂h_∂q
             A = inv(A)
-            fA = [∂f_∂σ..., ∂f_∂q...]'*A
-            dΔλ = (f - fA*R)/(fA*Θh)
+            fA .= [∂f_∂σ..., ∂f_∂q...]'*A
+            dΔλ = (f .- fA*R)/(fA*Θh)
             Δλ += dΔλ
             C_D_inv::Array{Float64, 2} = inv([(plasticVars.C) zeros(model.ϵSize, model.αSize);
                                             zeros(model.αSize, model.ϵSize) (plasticVars.D)])
@@ -124,12 +126,12 @@ function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
             ϵᵖα_n1 += -C_D_inv*Δσ_Δα
             plasticVars.σ_voigt += Δσ_Δα[1:model.ϵSize]
             plasticVars.q += Δσ_Δα[model.ϵSize+1:model.ϵSize+model.αSize]
-            Δσ_Δα = -A*(R + dΔλ*Θh)
+
             f = model.𝒇(plasticVars.σ_voigt, plasticVars.q, plasticVars, params)
             updateReturnMappingVars!(∂f_∂σ, ∂f_∂q, ∂Θ_∂σ, ∂Θ_∂q, ∂h_∂σ, ∂h_∂q, Θ, h, plasticVars, model, params)
-            Θh = [Θ; h]
+            Θh .= [Θ; h]
             #Update Residual
-            R = -ϵᵖα_n1 + [plasticVars.ϵᵖ; plasticVars.α] + Δλ*Θh
+            R .= -ϵᵖα_n1 + [plasticVars.ϵᵖ; plasticVars.α] + Δλ*Θh
             iter += 1
             #println("f = ", f, " norm(R) = ", norm(R), " dΔλ = ", dΔλ)
         end
@@ -138,5 +140,28 @@ function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
         end
         plasticVars.ϵᵖ = ϵᵖα_n1[1:model.ϵSize]
         plasticVars.α = ϵᵖα_n1[model.ϵSize+1:model.ϵSize+model.αSize]
+
+        ##Calculation of Algorthimic Tangent Tensor
+        A[1:model.ϵSize,1:model.ϵSize] = inv(plasticVars.C) + Δλ*∂Θ_∂σ
+        A[model.ϵSize+1:model.ϵSize+model.αSize, 1:model.ϵSize] = Δλ*∂h_∂σ
+        A[1:model.ϵSize, model.ϵSize+1:model.ϵSize+model.αSize] = Δλ*∂Θ_∂q
+        A[model.ϵSize+1:model.ϵSize+model.αSize, model.ϵSize+1:model.ϵSize+model.αSize] =
+        inv(plasticVars.D)+ Δλ*∂h_∂q
+        A = inv(A)
+        fA .= [∂f_∂σ..., ∂f_∂q...]'*A
+        Isym = [1.0  0.0  0.0  0.0  0.0  0.0
+        0.0  1.0  0.0  0.0  0.0  0.0
+        0.0  0.0  1.0  0.0  0.0  0.0
+        0.0  0.0  0.0  0.5  0.0  0.0
+        0.0  0.0  0.0  0.0  0.5  0.0
+        0.0  0.0  0.0  0.0  0.0  0.5]
+        𝐈::Array{Float64, 2}  = [Isym zeros(model.ϵSize, model.αSize); zeros(model.αSize, model.ϵSize) 0.0]
+        CTemp::Array{Float64, 2} = A*𝐈 .- A*Θh*(fA*𝐈/(fA*Θh))
+        plasticVars.Cᵀ .= CTemp[1:model.ϵSize, 1:model.ϵSize]
+        return true
+    else
+        #println("In Elastic Regime")
+        plasticVars.Cᵀ .= plasticVars.C
+        return false
     end
 end
