@@ -49,6 +49,7 @@ end
 function updateStateDict!(stateDict::Dict{Tuple{Int64, Int64}, State},
     stateDictBuffer::Dict{Tuple{Int64, Int64}, State})
     buffKeys = keys(SmallStrainPlastic.stateDictBuffer)
+    println("buffKeys")
     for buffKey ∈ collect(buffKeys)
         stateDict[buffKey...] = stateDictBuffer[buffKey...]
     end
