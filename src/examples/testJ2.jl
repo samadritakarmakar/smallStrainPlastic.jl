@@ -14,8 +14,6 @@ function testJ2()
     ϵₘArray::Array{Float64, 1} = zeros(0)
     𝒆Array::Array{Float64, 1} = zeros(0)
     iArray::Array{Int64, 1} = zeros(0)
-    #σ_buffer = zeros(6)
-    #ϵ_buffer = zeros(6)
     for i ∈ 1:820
         if (i<=200)
             plasticVars.ϵ[1] += 1e-5
@@ -26,14 +24,7 @@ function testJ2()
         end
         SmallStrainPlastic.checkPlasticState!(plasticVars, SmallStrainPlastic.j2Model, params_J2, 1, 1)
         #println(" ϵᵖ = ", plasticVars.ϵᵖ, " α = ", plasticVars.α)
-        Cᵀ::SymmetricTensor{4,3} = Tensors.fromvoigt(SymmetricTensor{4,3},plasticVars.Cᵀ)
-        #println("norm(Cᵀ) = ", norm(Cᵀ), " rank(plasticVars.Cᵀ) ", rank(plasticVars.Cᵀ))
-        #Δσ = plasticVars.σ_voigt - σ_buffer
-        #Δϵ = plasticVars.ϵ - ϵ_buffer
-        #σ_buffer = deepcopy(plasticVars.σ_voigt)
-        #ϵ_buffer = deepcopy(plasticVars.ϵ)
-        #println(Δσ./Δϵ')
-        #println(plasticVars.Cᵀ)
+        #Cᵀ::SymmetricTensor{4,3} = Tensors.fromvoigt(SymmetricTensor{4,3},plasticVars.Cᵀ[1])
         σₘ, 𝐬 = SmallStrainPlastic.get_σₘ_𝐬(plasticVars.σ_voigt)
         push!(σₘArray, σₘ)
         push!(𝐬Array, 𝐬)

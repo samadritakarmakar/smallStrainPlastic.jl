@@ -16,8 +16,9 @@ function checkPlasticState!(plasticVars::PlasticVars, model::PlasticModel,
     plasticVars.q = -plasticVars.H
     #if model.𝒇(plasticVars.σ_voigt, plasticVars.q, plasticVars, params) > 0
         #println("In plastic regime")
-        returnMapping!(plasticVars, model, params)
-        updateStateDict!(plasticVars.ϵᵖ, plasticVars.α, stateDictBuffer, elementNo, integrationPt)
+        returnMapping!(plasticVars, model, params, elementNo, integrationPt)
+        updateStateDict!(plasticVars.ϵᵖ, plasticVars.α, stateDictBuffer,
+        elementNo, integrationPt)
         #return true
     #else
         #println("In elastic regime")
@@ -90,7 +91,7 @@ The Strain 𝛆ᵖ and the internal variable 𝛂 are updated as,
 d(\\Delta\\lambda)``
 """
 function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
-    params::ModelParams)
+    params::ModelParams, elementNo::Int64, integrationPt::Int64)
 
     ∂f_∂σ::Array{Float64, 1}, ∂f_∂q::Array{Float64, 1},
     ∂Θ_∂σ::Array{Float64, 2}, ∂Θ_∂q::Array{Float64, 2},
@@ -157,11 +158,11 @@ function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
         0.0  0.0  0.0  0.0  0.0  0.5]
         𝐈::Array{Float64, 2}  = [Isym zeros(model.ϵSize, model.αSize); zeros(model.αSize, model.ϵSize) 0.0]
         CTemp::Array{Float64, 2} = A*𝐈 .- A*Θh*(fA*𝐈/(fA*Θh))
-        plasticVars.Cᵀ .= CTemp[1:model.ϵSize, 1:model.ϵSize]
+        plasticVars.Cᵀ[integrationPt] = CTemp[1:model.ϵSize, 1:model.ϵSize]
         return true
     else
         #println("In Elastic Regime")
-        plasticVars.Cᵀ .= plasticVars.C
+        plasticVars.Cᵀ[integrationPt] = plasticVars.C
         return false
     end
 end
