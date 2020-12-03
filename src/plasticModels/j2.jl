@@ -5,7 +5,7 @@ function 𝒇_j2(σ_voigt::Array{Float64, 1}, q::Array{Float64, 1}, plasticVars:
     #Deviatoric Stress
     σ -= 1.0/3.0*tr(σ)*one(SymmetricTensor{2,3})
     f::Float64 = sqrt(3/2).*norm(σ)-(σ_y-q[1])
-    println(f)
+    #println(f)
     return f #<= 0.0 ? 0.0 : f
 end
 
