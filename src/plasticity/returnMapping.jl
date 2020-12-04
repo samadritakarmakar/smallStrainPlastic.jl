@@ -141,18 +141,19 @@ function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
         inv(plasticVars.D)+ Δλ*∂h_∂q
         A = inv(A)
         fA .= [∂f_∂σ..., ∂f_∂q...]'*A
-        Isym = [1.0  0.0  0.0  0.0  0.0  0.0
+        #=Isym = [1.0  0.0  0.0  0.0  0.0  0.0
         0.0  1.0  0.0  0.0  0.0  0.0
         0.0  0.0  1.0  0.0  0.0  0.0
         0.0  0.0  0.0  0.5  0.0  0.0
         0.0  0.0  0.0  0.0  0.5  0.0
-        0.0  0.0  0.0  0.0  0.0  0.5]
-        #=Isym = [1.0  0.0  0.0  0.0  0.0  0.0
+        0.0  0.0  0.0  0.0  0.0  0.5]=#
+        Isym = [1.0  0.0  0.0  0.0  0.0  0.0
         0.0  1.0  0.0  0.0  0.0  0.0
         0.0  0.0  1.0  0.0  0.0  0.0
         0.0  0.0  0.0  1.0  0.0  0.0
         0.0  0.0  0.0  0.0  1.0  0.0
-        0.0  0.0  0.0  0.0  0.0  1.0]=#
+        0.0  0.0  0.0  0.0  0.0  1.0]
+        Θh .= [Θ; zeros(length(h)]
         𝐈::Array{Float64, 2}  = [Isym zeros(model.ϵSize, model.αSize); zeros(model.αSize, model.ϵSize) 0.0]
         CTemp::Array{Float64, 2} = A*𝐈 .- A*Θh*(fA*𝐈/(fA*Θh))
         plasticVars.Cᵀ = CTemp[1:model.ϵSize, 1:model.ϵSize]
