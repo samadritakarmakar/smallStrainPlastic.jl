@@ -153,7 +153,7 @@ function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
         0.0  0.0  0.0  1.0  0.0  0.0
         0.0  0.0  0.0  0.0  1.0  0.0
         0.0  0.0  0.0  0.0  0.0  1.0]
-        Θh .= [Θ; zeros(length(h))]
+        Θh .= [Θ; h]
         𝐈::Array{Float64, 2}  = [Isym zeros(model.ϵSize, model.αSize); zeros(model.αSize, model.ϵSize) 0.0]
         CTemp::Array{Float64, 2} = A*𝐈 .- A*Θh*(fA*𝐈/(fA*Θh))
         plasticVars.Cᵀ = CTemp[1:model.ϵSize, 1:model.ϵSize]
