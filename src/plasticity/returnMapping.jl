@@ -4,27 +4,18 @@ state is brought back on to surface of the yield surface.
     checkPlasticState!(plasticVars, model, elementNo integrationPt, parameters)
 """
 function checkPlasticState!(plasticVars::PlasticVars, model::PlasticModel,
-    params::ModelParams, elementNo::Int64, integrationPt::Int64)
+    params::ModelParams, stateDict::Dict{T}, stateDictBuffer::Dict{T},
+     elementNo::Int64, integrationPt::Int64; tolerance::Tolerance = Tolerance(1e-8, 1e-8, 1000)) where T
 
     getState!(plasticVars.ϵᵖ, plasticVars.α, stateDict, elementNo, integrationPt)
     model.ℂ!(plasticVars.C, plasticVars.σ_voigt, plasticVars.q, plasticVars, params)
     plasticVars.σ_voigt = plasticVars.C*(plasticVars.ϵ .- plasticVars.ϵᵖ)
     model.𝓗!(plasticVars.H, plasticVars.σ_voigt, plasticVars.q, plasticVars.α, plasticVars, params)
-    #for i ∈ 1:length(plasticVars.q)
-    #    plasticVars.q[i] = -plasticVars.H[i]
-    #end
     plasticVars.q = -plasticVars.H
-    #if model.𝒇(plasticVars.σ_voigt, plasticVars.q, plasticVars, params) > 0
-        #println("In plastic regime")
-        returnMapping!(plasticVars, model, params, elementNo, integrationPt)
-        updateStateDict!(plasticVars.ϵᵖ, plasticVars.α, stateDictBuffer,
-        elementNo, integrationPt)
-        #return true
-    #else
-        #println("In elastic regime")
-        #plasticVars.Cᵀ = plasticVars.C
-        #return false
-    #end
+    returnMapping!(plasticVars, model, params, elementNo, integrationPt, tolerance = tolerance)
+    updateStateDict!(plasticVars.ϵᵖ, plasticVars.α, stateDictBuffer,
+    elementNo, integrationPt)
+
 end
 
 
@@ -91,7 +82,7 @@ The Strain 𝛆ᵖ and the internal variable 𝛂 are updated as,
 d(\\Delta\\lambda)``
 """
 function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
-    params::ModelParams, elementNo::Int64, integrationPt::Int64)
+    params::ModelParams, elementNo::Int64, integrationPt::Int64; tolerance::Tolerance = Tolerance(1e-8, 1e-8, 1000))
 
     ∂f_∂σ::Array{Float64, 1}, ∂f_∂q::Array{Float64, 1},
     ∂Θ_∂σ::Array{Float64, 2}, ∂Θ_∂q::Array{Float64, 2},
