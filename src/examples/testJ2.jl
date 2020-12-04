@@ -27,7 +27,7 @@ function testJ2()
         SmallStrainPlastic.checkPlasticState!(plasticVars, SmallStrainPlastic.j2Model,
         params_J2, stateDict, stateDictBuffer, 1, 1)
         #println(" ϵᵖ = ", plasticVars.ϵᵖ, " α = ", plasticVars.α)
-        #println("plasticVars.Cᵀ = \n", plasticVars.Cᵀ)
+        println("plasticVars.Cᵀ = \n", plasticVars.Cᵀ)
         #Cᵀ::SymmetricTensor{4,3} = Tensors.fromvoigt(SymmetricTensor{4,3},plasticVars.Cᵀ[1])
         σₘ, 𝐬 = SmallStrainPlastic.get_σₘ_𝐬(plasticVars.σ_voigt)
         push!(σₘArray, σₘ)
