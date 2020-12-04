@@ -81,7 +81,7 @@ mutable struct PlasticVars
     H::Array{Float64, 1}
     q::Array{Float64, 1}
     α::Array{Float64, 1}
-    Cᵀ::Dict{Int64, Array{Float64, 2}}
+    Cᵀ::Array{Float64, 2}
 end
 
 "This function initializes Plastic variables. Since the number of
@@ -102,7 +102,7 @@ function initPlasticVars(model::PlasticModel)
     H::Array{Float64, 1} = zeros(αSize)
     q::Array{Float64, 1} = zeros(αSize)
     α::Array{Float64, 1} = zeros(αSize)
-    Cᵀ::Dict{Int64, Array{Float64, 2}} = Dict{Int64, Array{Float64, 2}}()
+    Cᵀ::Array{Float64, 2} = zeros(ϵSize, ϵSize)
     return PlasticVars(C, D, σ_voigt, ϵ, ϵᵖ, 𝒆ᵖ, H, q, α, Cᵀ)
 end
 

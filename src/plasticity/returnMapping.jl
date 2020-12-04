@@ -149,11 +149,11 @@ function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
         0.0  0.0  0.0  0.0  0.0  0.5]
         𝐈::Array{Float64, 2}  = [Isym zeros(model.ϵSize, model.αSize); zeros(model.αSize, model.ϵSize) 0.0]
         CTemp::Array{Float64, 2} = A*𝐈 .- A*Θh*(fA*𝐈/(fA*Θh))
-        plasticVars.Cᵀ[integrationPt] = CTemp[1:model.ϵSize, 1:model.ϵSize]
+        plasticVars.Cᵀ = CTemp[1:model.ϵSize, 1:model.ϵSize]
         return true
     else
         #println("In Elastic Regime")
-        plasticVars.Cᵀ[integrationPt] = plasticVars.C
+        plasticVars.Cᵀ = plasticVars.C
         return false
     end
 end
