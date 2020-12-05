@@ -1,7 +1,7 @@
 name = "SmallStrainPlastic"
 uuid = "b5fb8cbd-b1c6-42ae-8cde-a9279db76f58"
 authors = ["sam <samadritakarmakar@gmail.com>"]
-version = "0.3.0"
+version = "0.4.0"
 
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"

@@ -4,7 +4,7 @@ state is brought back on to surface of the yield surface.
     checkPlasticState!(plasticVars, model, elementNo integrationPt, parameters)
 """
 function checkPlasticState!(plasticVars::PlasticVars, model::PlasticModel,
-    params::ModelParams, stateDict::Dict{T}, stateDictBuffer::Dict{T},
+    params::Parameters, stateDict::Dict{T}, stateDictBuffer::Dict{T},
      elementNo::Int64, integrationPt::Int64;
      tolerance::Tolerance = Tolerance(1e-8, 1e-8, 1000), algoTangent = false) where T
 
@@ -88,7 +88,7 @@ The Strain 𝛆ᵖ and the internal variable 𝛂 are updated as,
 d(\\Delta\\lambda)``
 """
 function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
-    params::ModelParams; tolerance::Tolerance = Tolerance(1e-8, 1e-8, 1000), algoTangent = false)
+    params::Parameters; tolerance::Tolerance = Tolerance(1e-8, 1e-8, 1000), algoTangent = false)
 
     ∂f_∂σ::Array{Float64, 1}, ∂f_∂q::Array{Float64, 1},
     ∂Θ_∂σ::Array{Float64, 2}, ∂Θ_∂q::Array{Float64, 2},
@@ -175,9 +175,12 @@ end
 
 """This function finds the tangent tensor numerically.
 
-    Cᵀ =  findNumerical_Cᵀ(plasticVars, model, stateDict, params_J2, elementNo, IntegrationPt)
+    Cᵀ =  findNumerical_Cᵀ(plasticVars, model, stateDict, params, elementNo, IntegrationPt)
 """
-function findNumerical_Cᵀ(plasticVars, model, stateDict, params_J2, elementNo, IntegrationPt)
+
+function findNumerical_Cᵀ(plasticVars::PlasticVars, model::PlasticModel,
+    params::Parameters, stateDict::Dict{T},
+    elementNo::Int64, IntegrationPt::Int64) where T
     stateDictBuffer = createStateDict()
     plasticVarsNew = SmallStrainPlastic.initPlasticVars(model)
     plasticVarsNew.C = plasticVars.C
@@ -185,12 +188,12 @@ function findNumerical_Cᵀ(plasticVars, model, stateDict, params_J2, elementNo,
     h = 1e-7
     for i ∈ 1:model.ϵSize
         plasticVarsNew.ϵ = deepcopy(plasticVars.ϵ)
-        σ_old = SmallStrainPlastic.checkPlasticState!(plasticVarsNew, SmallStrainPlastic.j2Model,
-            params_J2, stateDict, stateDictBuffer, elementNo, IntegrationPt)
+        σ_old = SmallStrainPlastic.checkPlasticState!(plasticVarsNew, model,
+            params, stateDict, stateDictBuffer, elementNo, IntegrationPt)
             #h = ϵ[i] == 0.0 ? sqrt(eps(1.0)) : sqrt(eps(ϵ[i]))*ϵ[i]
         plasticVarsNew.ϵ[i] +=h
-        σ_new = SmallStrainPlastic.checkPlasticState!(plasticVarsNew, SmallStrainPlastic.j2Model,
-            params_J2, stateDict, stateDictBuffer, elementNo, IntegrationPt)
+        σ_new = SmallStrainPlastic.checkPlasticState!(plasticVarsNew, model,
+            params, stateDict, stateDictBuffer, elementNo, IntegrationPt)
         Cᵀ[:,i] = (σ_new-σ_old)/h
         #println((σ_new-σ_old))
         plasticVarsNew = SmallStrainPlastic.initPlasticVars(model)
