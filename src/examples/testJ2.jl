@@ -16,19 +16,20 @@ function testJ2()
     ϵₘArray::Array{Float64, 1} = zeros(0)
     𝒆Array::Array{Float64, 1} = zeros(0)
     iArray::Array{Int64, 1} = zeros(0)
-    for i ∈ 1:820
-        if (i<=200)
-            plasticVars.ϵ[1] += 1e-5
+    for i ∈ 1:20
+        if (i<=20)
+            plasticVars.ϵ[1] += 1e-4
         elseif (i>200 && i<=550)
-            plasticVars.ϵ[1] -= 1e-5
+            plasticVars.ϵ[1] -= 1e-4
         else
-            plasticVars.ϵ[1] += 1e-5
+            plasticVars.ϵ[1] += 1e-4
         end
-        SmallStrainPlastic.checkPlasticState!(plasticVars, SmallStrainPlastic.j2Model,
-        params_J2, stateDict, stateDictBuffer, 1, 1)
+        σ = SmallStrainPlastic.checkPlasticState!(plasticVars, SmallStrainPlastic.j2Model,
+        params_J2, stateDict, stateDictBuffer, 1, 1, algoTangent = true)
+        println("Cᵀ Algorithmic", plasticVars.Cᵀ)
         #println(" ϵᵖ = ", plasticVars.ϵᵖ, " α = ", plasticVars.α)
-        println("plasticVars.Cᵀ = \n", plasticVars.Cᵀ)
-        #Cᵀ::SymmetricTensor{4,3} = Tensors.fromvoigt(SymmetricTensor{4,3},plasticVars.Cᵀ[1])
+        Cᵀ = SmallStrainPlastic.findNumerical_Cᵀ(plasticVars, SmallStrainPlastic.j2Model, stateDict, params_J2, 1, 1)
+        println("Cᵀ Numerical", Cᵀ)
         σₘ, 𝐬 = SmallStrainPlastic.get_σₘ_𝐬(plasticVars.σ_voigt)
         push!(σₘArray, σₘ)
         push!(𝐬Array, 𝐬)

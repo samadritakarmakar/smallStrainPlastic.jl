@@ -19,7 +19,7 @@ export State, getState!, updateStateDict!, createStateDict, updateStateDict4rmBu
 #stateDict = createStateDict()
 #stateDictBuffer = createStateDict()
 ##from returnMapping.jl
-export checkPlasticState!
+export checkPlasticState!, findNumerical_Cᵀ
 
 #From tools/
 ##from denseJacobian

@@ -5,17 +5,18 @@ state is brought back on to surface of the yield surface.
 """
 function checkPlasticState!(plasticVars::PlasticVars, model::PlasticModel,
     params::ModelParams, stateDict::Dict{T}, stateDictBuffer::Dict{T},
-     elementNo::Int64, integrationPt::Int64; tolerance::Tolerance = Tolerance(1e-8, 1e-8, 1000)) where T
+     elementNo::Int64, integrationPt::Int64;
+     tolerance::Tolerance = Tolerance(1e-8, 1e-8, 1000), algoTangent = false) where T
 
     getState!(plasticVars.ϵᵖ, plasticVars.α, stateDict, elementNo, integrationPt)
     model.ℂ!(plasticVars.C, plasticVars.σ_voigt, plasticVars.q, plasticVars, params)
     plasticVars.σ_voigt = plasticVars.C*(plasticVars.ϵ .- plasticVars.ϵᵖ)
     model.𝓗!(plasticVars.H, plasticVars.σ_voigt, plasticVars.q, plasticVars.α, plasticVars, params)
     plasticVars.q = -plasticVars.H
-    returnMapping!(plasticVars, model, params, elementNo, integrationPt, tolerance = tolerance)
+    σ = returnMapping!(plasticVars, model, params, tolerance = tolerance, algoTangent = algoTangent)
     updateStateDict!(plasticVars.ϵᵖ, plasticVars.α, stateDictBuffer,
     elementNo, integrationPt)
-
+    return σ
 end
 
 
@@ -61,10 +62,13 @@ end
 """This function is responsible for executing the return mapping algorithm. It
 does so by calculating the evolution of the plastic strain using the Closest Point Projection
 method. The following formulations are used
+
 Here's an equation:
 ``d(\\Delta\\lambda) = \\frac{f^k - \\begin{bmatrix}\\partial f^k/\\partial \\sigma & \\partial f^k/ \\partial q\\end{bmatrix}\\begin{bmatrix}A\\end{bmatrix}\\begin{bmatrix} R \\end{bmatrix}}
 {\\begin{bmatrix}\\partial f^k/\\partial \\sigma & \\partial f^k/ \\partial q\\end{bmatrix}\\begin{bmatrix}A\\end{bmatrix}\\begin{bmatrix}\\Theta \\\\ h \\end{bmatrix}}``
+
 where:
+
 ``\\begin{bmatrix}R\\end{bmatrix} = -\\begin{bmatrix} \\epsilon^p_{n+1} \\\\ \\alpha_{n+1} \\end{bmatrix}
 +\\begin{bmatrix} \\epsilon^p_{n} \\\\ \\alpha_{n} \\end{bmatrix}
 +\\Delta\\lambda\\begin{bmatrix} \\Theta(\\sigma_{n+1}, q_{n+1}) \\\\ h(\\sigma_{n+1}, q_{n+1}) \\end{bmatrix}``
@@ -74,7 +78,9 @@ where:
 \\\\ \\Delta\\lambda \\frac{\\partial h}{\\partial\\sigma_{n+1}} &
 \\bm{D}^{-1} + \\Delta\\lambda \\frac{\\partial h}{\\partial q_{n+1}}
 \\end{bmatrix}``
+
 The Strain 𝛆ᵖ and the internal variable 𝛂 are updated as,
+
 ``\\begin{bmatrix}\\Delta \\epsilon^p \\\\ \\Delta \\alpha \\end{bmatrix} =
 \\begin{bmatrix}\\bm{C}^{-1} & 0 \\\\ 0 & \\bm{D}^{-1} \\end{bmatrix}
 \\begin{bmatrix}A\\end{bmatrix}
@@ -82,7 +88,7 @@ The Strain 𝛆ᵖ and the internal variable 𝛂 are updated as,
 d(\\Delta\\lambda)``
 """
 function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
-    params::ModelParams, elementNo::Int64, integrationPt::Int64; tolerance::Tolerance = Tolerance(1e-8, 1e-8, 1000))
+    params::ModelParams; tolerance::Tolerance = Tolerance(1e-8, 1e-8, 1000), algoTangent = false)
 
     ∂f_∂σ::Array{Float64, 1}, ∂f_∂q::Array{Float64, 1},
     ∂Θ_∂σ::Array{Float64, 2}, ∂Θ_∂q::Array{Float64, 2},
@@ -130,37 +136,65 @@ function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
         if iter > tolerance.maxIter
             @warn "Return Mapping Exited without convergence"
         end
+
         plasticVars.ϵᵖ = ϵᵖα_n1[1:model.ϵSize]
         plasticVars.α = ϵᵖα_n1[model.ϵSize+1:model.ϵSize+model.αSize]
-
-        ##Calculation of Algorthimic Tangent Tensor
-        A[1:model.ϵSize,1:model.ϵSize] = inv(plasticVars.C) + Δλ*∂Θ_∂σ
-        A[model.ϵSize+1:model.ϵSize+model.αSize, 1:model.ϵSize] = Δλ*∂h_∂σ
-        A[1:model.ϵSize, model.ϵSize+1:model.ϵSize+model.αSize] = Δλ*∂Θ_∂q
-        A[model.ϵSize+1:model.ϵSize+model.αSize, model.ϵSize+1:model.ϵSize+model.αSize] =
-        inv(plasticVars.D)+ Δλ*∂h_∂q
-        A = inv(A)
-        fA .= [∂f_∂σ..., ∂f_∂q...]'*A
-        #=Isym = [1.0  0.0  0.0  0.0  0.0  0.0
-        0.0  1.0  0.0  0.0  0.0  0.0
-        0.0  0.0  1.0  0.0  0.0  0.0
-        0.0  0.0  0.0  0.5  0.0  0.0
-        0.0  0.0  0.0  0.0  0.5  0.0
-        0.0  0.0  0.0  0.0  0.0  0.5]=#
-        Isym = [1.0  0.0  0.0  0.0  0.0  0.0
-        0.0  1.0  0.0  0.0  0.0  0.0
-        0.0  0.0  1.0  0.0  0.0  0.0
-        0.0  0.0  0.0  1.0  0.0  0.0
-        0.0  0.0  0.0  0.0  1.0  0.0
-        0.0  0.0  0.0  0.0  0.0  1.0]
-        Θh .= [Θ; h]
-        𝐈::Array{Float64, 2}  = [Isym zeros(model.ϵSize, model.αSize); zeros(model.αSize, model.ϵSize) 0.0]
-        CTemp::Array{Float64, 2} = A*𝐈 .- A*Θh*(fA*𝐈/(fA*Θh))
-        plasticVars.Cᵀ = CTemp[1:model.ϵSize, 1:model.ϵSize]
-        return true
+        if algoTangent == true
+            ##Calculation of Algorthimic Tangent Tensor
+            A[1:model.ϵSize,1:model.ϵSize] = inv(plasticVars.C) + Δλ*∂Θ_∂σ
+            A[model.ϵSize+1:model.ϵSize+model.αSize, 1:model.ϵSize] = Δλ*∂h_∂σ
+            A[1:model.ϵSize, model.ϵSize+1:model.ϵSize+model.αSize] = Δλ*∂Θ_∂q
+            A[model.ϵSize+1:model.ϵSize+model.αSize, model.ϵSize+1:model.ϵSize+model.αSize] =
+            inv(plasticVars.D)+ Δλ*∂h_∂q
+            A = inv(A)
+            fA .= [∂f_∂σ..., ∂f_∂q...]'*A
+            #=Isym = [1.0  0.0  0.0  0.0  0.0  0.0
+            0.0  1.0  0.0  0.0  0.0  0.0
+            0.0  0.0  1.0  0.0  0.0  0.0
+            0.0  0.0  0.0  0.5  0.0  0.0
+            0.0  0.0  0.0  0.0  0.5  0.0
+            0.0  0.0  0.0  0.0  0.0  0.5]=#
+            Isym = [1.0  0.0  0.0  0.0  0.0  0.0
+            0.0  1.0  0.0  0.0  0.0  0.0
+            0.0  0.0  1.0  0.0  0.0  0.0
+            0.0  0.0  0.0  1.0  0.0  0.0
+            0.0  0.0  0.0  0.0  1.0  0.0
+            0.0  0.0  0.0  0.0  0.0  1.0]
+            Θh .= [Θ; h]
+            𝐈::Array{Float64, 2}  = [Isym zeros(model.ϵSize, model.αSize); zeros(model.αSize, model.ϵSize) 0.0]
+            CTemp::Array{Float64, 2} = A*𝐈 .- A*Θh*(fA*𝐈/(fA*Θh))
+            plasticVars.Cᵀ = CTemp[1:model.ϵSize, 1:model.ϵSize]
+        end
     else
-        #println("In Elastic Regime")
-        plasticVars.Cᵀ = plasticVars.C
-        return false
+        if algoTangent == true
+            plasticVars.Cᵀ .= plasticVars.C
+        end
     end
+    return plasticVars.σ_voigt
+end
+
+"""This function finds the tangent tensor numerically.
+
+    Cᵀ =  findNumerical_Cᵀ(plasticVars, model, stateDict, params_J2, elementNo, IntegrationPt)
+"""
+function findNumerical_Cᵀ(plasticVars, model, stateDict, params_J2, elementNo, IntegrationPt)
+    stateDictBuffer = createStateDict()
+    plasticVarsNew = SmallStrainPlastic.initPlasticVars(model)
+    plasticVarsNew.C = plasticVars.C
+    Cᵀ = zeros(model.ϵSize,model.ϵSize)
+    h = 1e-7
+    for i ∈ 1:model.ϵSize
+        plasticVarsNew.ϵ = deepcopy(plasticVars.ϵ)
+        σ_old = SmallStrainPlastic.checkPlasticState!(plasticVarsNew, SmallStrainPlastic.j2Model,
+            params_J2, stateDict, stateDictBuffer, elementNo, IntegrationPt)
+            #h = ϵ[i] == 0.0 ? sqrt(eps(1.0)) : sqrt(eps(ϵ[i]))*ϵ[i]
+        plasticVarsNew.ϵ[i] +=h
+        σ_new = SmallStrainPlastic.checkPlasticState!(plasticVarsNew, SmallStrainPlastic.j2Model,
+            params_J2, stateDict, stateDictBuffer, elementNo, IntegrationPt)
+        Cᵀ[:,i] = (σ_new-σ_old)/h
+        #println((σ_new-σ_old))
+        plasticVarsNew = SmallStrainPlastic.initPlasticVars(model)
+        plasticVarsNew.C = plasticVars.C
+    end
+    return Cᵀ
 end
