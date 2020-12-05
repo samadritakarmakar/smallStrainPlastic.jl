@@ -186,18 +186,23 @@ function findNumerical_Cᵀ(plasticVars::PlasticVars, model::PlasticModel,
     plasticVarsNew.C = plasticVars.C
     Cᵀ = zeros(model.ϵSize,model.ϵSize)
     h = 1e-7
-    for i ∈ 1:model.ϵSize
-        plasticVarsNew.ϵ = deepcopy(plasticVars.ϵ)
-        σ_old = SmallStrainPlastic.checkPlasticState!(plasticVarsNew, model,
-            params, stateDict, stateDictBuffer, elementNo, IntegrationPt)
-            #h = ϵ[i] == 0.0 ? sqrt(eps(1.0)) : sqrt(eps(ϵ[i]))*ϵ[i]
-        plasticVarsNew.ϵ[i] +=h
-        σ_new = SmallStrainPlastic.checkPlasticState!(plasticVarsNew, model,
-            params, stateDict, stateDictBuffer, elementNo, IntegrationPt)
-        Cᵀ[:,i] = (σ_new-σ_old)/h
-        #println((σ_new-σ_old))
-        plasticVarsNew = SmallStrainPlastic.initPlasticVars(model)
-        plasticVarsNew.C = plasticVars.C
+    f = model.𝒇(plasticVars.σ_voigt, plasticVars.q, plasticVars, params)
+    if(f>0)
+        for i ∈ 1:model.ϵSize
+            plasticVarsNew.ϵ = deepcopy(plasticVars.ϵ)
+            σ_old = SmallStrainPlastic.checkPlasticState!(plasticVarsNew, model,
+                params, stateDict, stateDictBuffer, elementNo, IntegrationPt)
+                #h = ϵ[i] == 0.0 ? sqrt(eps(1.0)) : sqrt(eps(ϵ[i]))*ϵ[i]
+            plasticVarsNew.ϵ[i] +=h
+            σ_new = SmallStrainPlastic.checkPlasticState!(plasticVarsNew, model,
+                params, stateDict, stateDictBuffer, elementNo, IntegrationPt)
+            Cᵀ[:,i] = (σ_new-σ_old)/h
+            #println((σ_new-σ_old))
+            plasticVarsNew = SmallStrainPlastic.initPlasticVars(model)
+            plasticVarsNew.C = plasticVars.C
+        end
+        return Cᵀ
+    else
+        return plasticVars.C
     end
-    return Cᵀ
 end
