@@ -16,15 +16,15 @@ function testJ2()
     ϵₘArray::Array{Float64, 1} = zeros(0)
     𝒆Array::Array{Float64, 1} = zeros(0)
     iArray::Array{Int64, 1} = zeros(0)
-    for i ∈ 1:20
+    for i ∈ 1:55
         if (i<=20)
             plasticVars.ϵ[1] += 1e-4
-        elseif (i>200 && i<=550)
+        elseif (i>20 && i<=55)
             plasticVars.ϵ[1] -= 1e-4
         else
             plasticVars.ϵ[1] += 1e-4
         end
-        σ = SmallStrainPlastic.checkPlasticState!(plasticVars, SmallStrainPlastic.j2Model,
+        SmallStrainPlastic.checkPlasticState!(plasticVars, SmallStrainPlastic.j2Model,
         params_J2, stateDict, stateDictBuffer, 1, 1, algoTangent = true)
         println("Cᵀ Algorithmic", plasticVars.Cᵀ)
         #println(" ϵᵖ = ", plasticVars.ϵᵖ, " α = ", plasticVars.α)
