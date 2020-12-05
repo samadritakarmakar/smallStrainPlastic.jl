@@ -185,7 +185,7 @@ function findNumerical_Cᵀ(plasticVars::PlasticVars, model::PlasticModel,
     plasticVarsNew = SmallStrainPlastic.initPlasticVars(model)
     plasticVarsNew.C = plasticVars.C
     Cᵀ = zeros(model.ϵSize,model.ϵSize)
-    h = 1e-7
+    h = 1e-8
     f = model.𝒇(plasticVars.σ_voigt, plasticVars.q, plasticVars, params)
     if(f>0)
         for i ∈ 1:model.ϵSize
