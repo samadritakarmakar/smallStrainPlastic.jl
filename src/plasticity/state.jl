@@ -16,8 +16,8 @@ function getState!(ϵᵖ::Array{Float64,1}, α::Array{Float64,1}, stateDict::Dic
     elementNo::Int64= 1, integrationPt::Int64=1)
 
     if (elementNo, integrationPt) ∈ keys(stateDict)
-        ϵᵖ = stateDict[elementNo, integrationPt].ϵᵖ
-        α = stateDict[elementNo, integrationPt].α
+        ϵᵖ .= stateDict[elementNo, integrationPt].ϵᵖ
+        α .= stateDict[elementNo, integrationPt].α
     else
         fill!(ϵᵖ, 0.0)
         fill!(α, 0.0)
