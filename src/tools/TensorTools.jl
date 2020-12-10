@@ -29,7 +29,9 @@ function get_σₘ_𝐬(σ_voigt)
 end
 
 function get_ϵₘ_𝒆(ϵ)
-    𝜺::SymmetricTensor{2,3, Float64, 6} = deepcopy(Tensors.fromvoigt(SymmetricTensor{2,3}, ϵ))
+    ϵ1 = deepcopy(ϵ)
+    ϵ1[4:6] = 0.5*ϵ1[4:6]
+    𝜺::SymmetricTensor{2,3, Float64, 6} = deepcopy(Tensors.fromvoigt(SymmetricTensor{2,3}, ϵ1))
     ϵₘ::Float64 = tr(𝜺)
     #Deviatoric Stress
     𝜺 -= 1.0/3.0*ϵₘ*one(SymmetricTensor{2,3})

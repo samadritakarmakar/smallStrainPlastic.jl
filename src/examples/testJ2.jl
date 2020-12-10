@@ -16,15 +16,15 @@ function testJ2()
     ϵₘArray::Array{Float64, 1} = zeros(0)
     𝒆Array::Array{Float64, 1} = zeros(0)
     iArray::Array{Int64, 1} = zeros(0)
-    plasticVars.ϵ[1] += 20e-4
-    #=for i ∈ 1:82
+    #plasticVars.ϵ[1] += 20e-4
+    for i ∈ 1:82
         if (i<=20)
             plasticVars.ϵ[1] += 1e-4
         elseif (i>20 && i<=55)
             plasticVars.ϵ[1] -= 1e-4
         else
             plasticVars.ϵ[1] += 1e-4
-        end=#
+        end
         SmallStrainPlastic.checkPlasticState!(plasticVars, SmallStrainPlastic.j2Model,
         params_J2, stateDict, stateDictBuffer, 1, 1, algoTangent = true)
         println("Cᵀ Algorithmic", plasticVars.Cᵀ)
@@ -43,7 +43,7 @@ function testJ2()
         push!(𝒆Array, 𝒆)
         #push!(iArray, i)
         SmallStrainPlastic.updateStateDict4rmBuffer!(stateDict, stateDictBuffer)
-    #end
+    end
 
     plot(ϵₘArray, 𝐬Array, legend=false)#, seriestype = :scatter)
 end
