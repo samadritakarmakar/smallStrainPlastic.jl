@@ -118,12 +118,19 @@ function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
             fA .= [∂f_∂σ..., ∂f_∂q...]'*A
             dΔλ = (f .- fA*R)/(fA*Θh)
             Δλ += dΔλ
-            C_D_inv::Array{Float64, 2} = inv([(plasticVars.C) zeros(model.ϵSize, model.αSize);
-                                            zeros(model.αSize, model.ϵSize) (plasticVars.D)])
+            C_D_inv::Array{Float64, 2} = ([inv(plasticVars.C) zeros(model.ϵSize, model.αSize);
+                                            zeros(model.αSize, model.ϵSize) inv(plasticVars.D)])
             Δσ_Δα = -A*(R + dΔλ*Θh)
             ϵᵖα_n1 += -C_D_inv*Δσ_Δα
             plasticVars.σ_voigt += Δσ_Δα[1:model.ϵSize]
             plasticVars.q += Δσ_Δα[model.ϵSize+1:model.ϵSize+model.αSize]
+            #plasticVars.σ_voigt .= plasticVars.C*(plasticVars.ϵ .-
+            #ϵᵖα_n1[1:model.ϵSize])
+
+            #model.𝓗!(plasticVars.H, ϵᵖα_n1[1:model.ϵSize],
+             #plasticVars.q, ϵᵖα_n1[model.ϵSize+1:model.ϵSize+model.αSize], plasticVars, params)
+
+            #plasticVars.q .= -plasticVars.H
 
             f = model.𝒇(plasticVars.σ_voigt, plasticVars.q, plasticVars, params)
             updateReturnMappingVars!(∂f_∂σ, ∂f_∂q, ∂Θ_∂σ, ∂Θ_∂q, ∂h_∂σ, ∂h_∂q, Θ, h, plasticVars, model, params)
@@ -148,18 +155,18 @@ function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
             inv(plasticVars.D)+ Δλ*∂h_∂q
             A = inv(A)
             fA .= [∂f_∂σ..., ∂f_∂q...]'*A
-            #=Isym = [1.0  0.0  0.0  0.0  0.0  0.0
+            Isym = [1.0  0.0  0.0  0.0  0.0  0.0
             0.0  1.0  0.0  0.0  0.0  0.0
             0.0  0.0  1.0  0.0  0.0  0.0
             0.0  0.0  0.0  0.5  0.0  0.0
             0.0  0.0  0.0  0.0  0.5  0.0
-            0.0  0.0  0.0  0.0  0.0  0.5]=#
-            Isym = [1.0  0.0  0.0  0.0  0.0  0.0
+            0.0  0.0  0.0  0.0  0.0  0.5]
+            #=Isym = [1.0  0.0  0.0  0.0  0.0  0.0
             0.0  1.0  0.0  0.0  0.0  0.0
             0.0  0.0  1.0  0.0  0.0  0.0
             0.0  0.0  0.0  1.0  0.0  0.0
             0.0  0.0  0.0  0.0  1.0  0.0
-            0.0  0.0  0.0  0.0  0.0  1.0]
+            0.0  0.0  0.0  0.0  0.0  1.0]=#
             Θh .= [Θ; h]
             𝐈::Array{Float64, 2}  = [Isym zeros(model.ϵSize, model.αSize); zeros(model.αSize, model.ϵSize) 0.0]
             CTemp::Array{Float64, 2} = A*𝐈 .- A*Θh*(fA*𝐈/(fA*Θh))
@@ -190,8 +197,10 @@ function findNumerical_Cᵀ(plasticVars::PlasticVars, model::PlasticModel,
     for i ∈ 1:model.ϵSize
         σ_old = SmallStrainPlastic.checkPlasticState!(plasticVarsNew, model,
         params, stateDict, stateDictBuffer, elementNo, IntegrationPt)
+        #println("plasticVarsNew.ϵ = ", plasticVarsNew.ϵ)
         #h = ϵ[i] == 0.0 ? sqrt(eps(1.0)) : sqrt(eps(ϵ[i]))*ϵ[i]
         plasticVarsNew.ϵ[i] +=h
+        #println("plasticVarsNew.ϵ + h = ", plasticVarsNew.ϵ)
         σ_new = SmallStrainPlastic.checkPlasticState!(plasticVarsNew, model,
             params, stateDict, stateDictBuffer, elementNo, IntegrationPt)
         Cᵀ[:,i] = (σ_new-σ_old)/h

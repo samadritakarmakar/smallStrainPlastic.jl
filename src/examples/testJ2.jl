@@ -16,33 +16,34 @@ function testJ2()
     ϵₘArray::Array{Float64, 1} = zeros(0)
     𝒆Array::Array{Float64, 1} = zeros(0)
     iArray::Array{Int64, 1} = zeros(0)
-    for i ∈ 1:55
+    plasticVars.ϵ[1] += 20e-4
+    #=for i ∈ 1:82
         if (i<=20)
             plasticVars.ϵ[1] += 1e-4
         elseif (i>20 && i<=55)
             plasticVars.ϵ[1] -= 1e-4
         else
             plasticVars.ϵ[1] += 1e-4
-        end
+        end=#
         SmallStrainPlastic.checkPlasticState!(plasticVars, SmallStrainPlastic.j2Model,
         params_J2, stateDict, stateDictBuffer, 1, 1, algoTangent = true)
         println("Cᵀ Algorithmic", plasticVars.Cᵀ)
         #println(" ϵᵖ = ", plasticVars.ϵᵖ, " α = ", plasticVars.α)
         Cᵀ = SmallStrainPlastic.findNumerical_Cᵀ(plasticVars, SmallStrainPlastic.j2Model, params_J2, stateDict, 1, 1)
-        testϵᵖ = zeros(6)
-        testα = zeros(1)
-        SmallStrainPlastic.getState!(testϵᵖ, testα, stateDict, 1,1)
-        println("testϵᵖ = ", testϵᵖ, "\ntestα = ", testα)
-        #println("Cᵀ Numerical", Cᵀ)
+        #testϵᵖ = zeros(6)
+        #testα = zeros(1)
+        #SmallStrainPlastic.getState!(testϵᵖ, testα, stateDict, 1,1)
+        #println("testϵᵖ = ", testϵᵖ, "\ntestα = ", testα)
+        println("Cᵀ Numerical", Cᵀ)
         σₘ, 𝐬 = SmallStrainPlastic.get_σₘ_𝐬(plasticVars.σ_voigt)
         push!(σₘArray, σₘ)
         push!(𝐬Array, 𝐬)
         ϵₘ, 𝒆 = get_ϵₘ_𝒆(plasticVars.ϵ)
         push!(ϵₘArray, ϵₘ)
         push!(𝒆Array, 𝒆)
-        push!(iArray, i)
+        #push!(iArray, i)
         SmallStrainPlastic.updateStateDict4rmBuffer!(stateDict, stateDictBuffer)
-    end
+    #end
 
     plot(ϵₘArray, 𝐬Array, legend=false)#, seriestype = :scatter)
 end

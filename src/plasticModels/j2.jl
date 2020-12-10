@@ -1,7 +1,8 @@
 
 function 𝒇_j2(σ_voigt::Array{Float64, 1}, q::Array{Float64, 1}, plasticVars::PlasticVars, params::ModelParams)
     σ_y::Float64 = params.f
-    σ::SymmetricTensor{2,3, Float64, 6} = deepcopy(Tensors.fromvoigt(SymmetricTensor{2,3}, σ_voigt))
+    σ::SymmetricTensor{2,3, Float64, 6} = deepcopy(Tensors.fromvoigt(SymmetricTensor{2,3}, σ_voigt, order = [1 4 6; 4 2 5; 6 4 3]))
+
     #Deviatoric Stress
     σ -= 1.0/3.0*tr(σ)*one(SymmetricTensor{2,3})
     f::Float64 = sqrt(3/2).*norm(σ)-(σ_y-q[1])
@@ -11,12 +12,12 @@ end
 
 function ∂𝒇_∂𝛔_j2!(∂f_∂σ::Array{Float64, 1}, σ_voigt::Array{Float64, 1}, q::Array{Float64, 1},  plasticVars::PlasticVars, params::ModelParams)
     σ_y::Float64 = params.∂f_∂σ
-    σ::SymmetricTensor{2,3, Float64, 6} = deepcopy(Tensors.fromvoigt(SymmetricTensor{2,3}, σ_voigt))
+    σ::SymmetricTensor{2,3, Float64, 6} = deepcopy(Tensors.fromvoigt(SymmetricTensor{2,3}, σ_voigt, order = [1 4 6; 4 2 5; 6 4 3]))
     #Deviatoric Stress
     σ -= 1.0/3.0*tr(σ)*one(SymmetricTensor{2,3})
     #∂f∂σ::SymmetricTensor{2,3, Float64, 6} = sqrt(1.5)*(1.0/norm(σ)*Tensors.dcontract(getProjectionTensor4(),σ))
     ∂f∂σ::SymmetricTensor{2,3, Float64, 6} = sqrt(1.5)*(1.0/norm(σ)*σ)
-    ∂f_∂σ .= Tensors.tovoigt(∂f∂σ)
+    ∂f_∂σ .= Tensors.tovoigt(∂f∂σ, order = [1 4 6; 4 2 5; 6 4 3])
     #println("∂f_∂σ = ",∂f_∂σ)
     return ∂f_∂σ
 end
@@ -41,12 +42,12 @@ function ∂𝚯_∂𝛔_j2!(∂Θ_∂σ::Array{Float64, 2}, σ_voigt::Array{Flo
     func(σ_voigt) = ∂𝒇_∂𝛔_j2!(∂f_∂σ, σ_voigt, q, plasticVars, params)
     denseJacobian!(∂Θ_∂σ, func, σ)
     =#
-    σ::SymmetricTensor{2,3, Float64, 6} = deepcopy(Tensors.fromvoigt(SymmetricTensor{2,3}, σ_voigt))
+    σ::SymmetricTensor{2,3, Float64, 6} = deepcopy(Tensors.fromvoigt(SymmetricTensor{2,3}, σ_voigt, order = [1 4 6; 4 2 5; 6 4 3]))
     #Deviatoric Stress
     σ -= 1.0/3.0*tr(σ)*one(SymmetricTensor{2,3})
     norm_σ = norm(σ)
     ∂Θ∂σ::SymmetricTensor{4,3, Float64, 36}  = sqrt(3/2)*(one(SymmetricTensor{4,3})/norm_σ - (σ ⊗ σ)/norm_σ^3.0)
-    ∂Θ_∂σ .= Tensors.tovoigt(∂Θ∂σ)
+    ∂Θ_∂σ .= Tensors.tovoigt(∂Θ∂σ, order = [1 4 6; 4 2 5; 6 4 3])
     #=
     func(σ_voigt) = ∂𝒇_∂𝛔_j2!(∂f_∂σ, σ_voigt, q, plasticVars, params)
     denseJacobian!(∂Θ_∂σ, func, σ_voigt)
