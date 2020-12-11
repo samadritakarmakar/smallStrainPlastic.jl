@@ -38,8 +38,8 @@ function ∂𝚯_∂𝛔_j2!(∂Θ_∂σ::Array{Float64, 2}, σ_voigt::Array{Flo
 
     σ::Array{Float64, 1} = deepcopy(σ_voigt)
     trace_sigma::Float64 = sum(σ[1:3])
-    σ[1:3] -= 1.0/3.0*trace_sigma*[1.0; 1.0; 1.0]
-    func(σ_voigt) = ∂𝒇_∂𝛔_j2!(∂f_∂σ, σ_voigt, q, plasticVars, params)
+    #σ[1:3] -= 1.0/3.0*trace_sigma*[1.0; 1.0; 1.0]
+    func(σ) = ∂𝒇_∂𝛔_j2!(∂f_∂σ, σ, q, plasticVars, params)
     denseJacobian!(∂Θ_∂σ, func, σ)
 
     #=σ::SymmetricTensor{2,3, Float64, 6} = deepcopy(Tensors.fromvoigt(SymmetricTensor{2,3}, σ_voigt, order = [1 4 6; 4 2 5; 6 4 3]))
