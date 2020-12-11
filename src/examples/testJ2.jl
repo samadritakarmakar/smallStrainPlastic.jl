@@ -17,7 +17,7 @@ function testJ2()
     𝒆Array::Array{Float64, 1} = zeros(0)
     iArray::Array{Int64, 1} = zeros(0)
     #plasticVars.ϵ[1] += 20e-4
-    for i ∈ 1:82
+    for i ∈ 1:19
         if (i<=20)
             plasticVars.ϵ[1] += 1e-4
         elseif (i>20 && i<=55)
