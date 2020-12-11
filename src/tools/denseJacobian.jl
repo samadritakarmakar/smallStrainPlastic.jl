@@ -17,7 +17,7 @@ function denseJacobian!(jacobian::Array{Float64,2}, f::Function, x::Array{Float6
     for col ∈ 1:cols
         h = x[col] == 0.0 ? sqrt(eps(1.0)) : sqrt(eps(x[col]))*x[col]
         jacobian[:, col] .= (f(x+[zeros(col-1); h; zeros(cols-col)]) - f_col)/h
-        println((x+[zeros(col-1); h; zeros(cols-col)]))
+        #println((x+[zeros(col-1); h; zeros(cols-col)]))
 
     end
     return nothing
