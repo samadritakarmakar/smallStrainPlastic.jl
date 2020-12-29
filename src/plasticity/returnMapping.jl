@@ -10,7 +10,7 @@ function checkPlasticState!(plasticVars::PlasticVars, model::PlasticModel,
 
     getState!(plasticVars.ϵᵖ, plasticVars.α, stateDict, elementNo, integrationPt)
     plasticVars.C .= model.ℂ(plasticVars.σ_mandel, plasticVars.q, plasticVars, params)
-    if length(plasticVars.ϵ == 6)
+    if length(plasticVars.ϵ) == 6
         plasticVars.ϵ = get_P()*plasticVars.ϵ
     end
     plasticVars.σ_mandel .= plasticVars.C*(plasticVars.ϵ .- plasticVars.ϵᵖ)
