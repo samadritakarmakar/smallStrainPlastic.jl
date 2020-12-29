@@ -1,5 +1,5 @@
 module SmallStrainPlastic
-using LinearAlgebra, Tensors
+using LinearAlgebra, ForwardDiff
 include("plasticity/plasticModel.jl")
 include("plasticity/returnMapping.jl")
 include("plasticity/state.jl")
@@ -25,11 +25,11 @@ export checkPlasticState!, findNumerical_Cᵀ
 ##from denseJacobian
 export denseJacobian!, denseJacobian
 ##from TensorTools
-export createVoigtElasticTensor, getProjectionTensor4, get_σₘ_𝐬, get_ϵₘ_𝒆
+export createVoigtElasticTensor, getProjectionTensor4, get_σₘ_𝐬_mandel, get_ϵₘ_𝒆_mandel
 
 #From plasticModels/
 ##from j2.jl
-export 𝒇_j2, ∂𝒇_∂𝛔_j2!, ∂𝒇_∂𝐪_j2!, ∂Θ_∂𝛔_j2!, ∂Θ_∂𝐪_j2!
-export ∂𝐡_∂𝛔_j2!, ∂𝐡_∂𝐪_j2!, 𝓗_j2!, ℂ_j2!, 𝔻_j2!
+export 𝒇_j2, ∂𝒇_∂𝛔_j2, ∂𝒇_∂𝐪_j2, ∂Θ_∂𝛔_j2, ∂Θ_∂𝐪_j2
+export ∂𝐡_∂𝛔_j2, ∂𝐡_∂𝐪_j2, 𝓗_j2, ℂ_j2, 𝔻_j2
 export j2Model, initParams_j2
 end # module

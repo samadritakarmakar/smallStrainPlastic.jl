@@ -1,9 +1,9 @@
 name = "SmallStrainPlastic"
 uuid = "b5fb8cbd-b1c6-42ae-8cde-a9279db76f58"
 authors = ["sam <samadritakarmakar@gmail.com>"]
-version = "0.4.2"
+version = "0.5.0"
 
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-Tensors = "48a634ad-e948-5137-8d70-aa71f2a747f4"
