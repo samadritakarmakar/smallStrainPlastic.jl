@@ -29,6 +29,7 @@ export createVoigtElasticTensor, getProjectionTensor4, getProjectionTensor, get_
 export get_Pᵀ, get_P, doubleContract, doubleContract, trace, getOrder2Identity
 export getOrder4Identity, getOrder4SymIdentity, getMandelElasticTensor, mandel2voigt
 export getVoigtEngineeringStress, getContinuumMandelStrain
+export getTensorMapping, getVoigtIndex
 
 #From plasticModels/
 ##from j2.jl
