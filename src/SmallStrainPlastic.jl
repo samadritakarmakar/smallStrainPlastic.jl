@@ -25,7 +25,10 @@ export checkPlasticState!, findNumerical_Cᵀ
 ##from denseJacobian
 export denseJacobian!, denseJacobian
 ##from TensorTools
-export createVoigtElasticTensor, getProjectionTensor4, get_σₘ_𝐬_mandel, get_ϵₘ_𝒆_mandel
+export createVoigtElasticTensor, getProjectionTensor4, getProjectionTensor, get_σₘ_𝐬_mandel, get_ϵₘ_𝒆_mandel
+export get_Pᵀ, get_P, doubleContract, doubleContract, trace, getOrder2Identity
+export getOrder4Identity, getOrder4SymIdentity, getMandelElasticTensor, mandel2voigt
+export getVoigtEngineeringStress, getContinuumMandelStrain
 
 #From plasticModels/
 ##from j2.jl

@@ -68,6 +68,11 @@ function getVoigtIndex(mapDict::Dict{Int64, Int64}, i::Int64, j::Int64)::Int64
     return mapDict[10*i+j]
 end
 
+"""Double contraction of two tensors using Mandel Notation as per "The Finite Element Method for Solid and Structural Mechanics,
+Seventh Edition, O.C. Zienkiewicz, R.L. Taylor, D.D. Fox."
+
+result = doubleContract(Array1, Array2)
+"""
 function doubleContract(Array1::Array{T,1}, Array2::Array{T,1}) where T
     mapDict = getTensorMapping()
     if (size(Array1, 2) ==1)
@@ -100,18 +105,30 @@ function doubleContract(Array1::Array{T,1}, Array2::Array{T,1}) where T
     end
     return R
 end
+"""2nd Order tensor Norm save in array as per  mandel notation given in "The Finite Element Method for Solid and Structural Mechanics,
+Seventh Edition, O.C. Zienkiewicz, R.L. Taylor, D.D. Fox."
 
-function frobeniusNorm_p2(array::Array{T,1}) where T
+    frobeniusNorm_p2(array)
+"""
+function doubleContract(array::Array{T,1}) where T
     fN = doubleContract(array, array)
     return sqrt(fN[1])
 end
 
+"""Trace of second order mandel notation tensor.
+
+    arrayTrace = trace(array)
+"""
 function trace(array::Array{T,1}) where T
     m = zeros(9)
     m[1:3] = ones(3)
     return m'*array
 end
 
+"""Generates 2nd Order Identity tensor in mandel notation
+
+    Order2I = getOrder2Identity()
+"""
 function getOrder2Identity()
     δ(i, j) = i == j ? 1.0 : 0.0
     mapDict = getTensorMapping()
@@ -125,6 +142,11 @@ function getOrder2Identity()
     return I
 end
 
+
+"""Generates 4th Order Identity tensor in mandel notation
+
+    Order4I = getOrder4Identity()
+"""
 function getOrder4Identity()
     δ(i, j) = i == j ? 1.0 : 0.0
     mapDict = getTensorMapping()
@@ -143,6 +165,11 @@ function getOrder4Identity()
     return I
 end
 
+
+"""Generates 4th Order Symmetric Identity tensor in mandel notation
+
+    Order4ISym = getOrder4SymIdentity()
+"""
 function getOrder4SymIdentity()
     δ(i, j) = i == j ? 1.0 : 0.0
     mapDict = getTensorMapping()
@@ -161,6 +188,11 @@ function getOrder4SymIdentity()
     return I
 end
 
+"""Generates Elastic 4th order Tensor as per Mandel Notation mentioned in "The Finite Element Method for Solid and Structural Mechanics,
+Seventh Edition, O.C. Zienkiewicz, R.L. Taylor, D.D. Fox."
+
+    C_mandel = getMandelElasticTensor(200e3, 0.3)
+"""
 function getMandelElasticTensor(E::Float64, ν::Float64)::Array{Float64, 2}
     λ = ν*E/((1+ν)*(1-2*ν))
     μ = E/(2*(1+ν))
@@ -170,6 +202,10 @@ function getMandelElasticTensor(E::Float64, ν::Float64)::Array{Float64, 2}
     return λ*I4 .+ 2*μ*Array{Float64,2}(I, 9,9)
 end
 
+"""Transform mandel notation 2nd or 4th order tensor to voigt notation
+
+    arrayVoigt = mandel2voigt(arrayMandel)
+"""
 function mandel2voigt(array::Array{T,1}) where T
     rowSize = size(array, 1)
     colSize = size(array, 2)
@@ -186,10 +222,20 @@ function mandel2voigt(array::Array{T,1}) where T
     return arrayVoigt
 end
 
+
+"""Transform mandel notation stress to voigt notation or engineering stress
+
+    arrayVoigt = getVoigtEngineeringStress(arrayMandel)
+"""
+
 function getVoigtEngineeringStress(σ_mandel::Array{T,1}) where T
     return Pᵀ*σ_mandel
 end
 
+"""Transform voigt notation strain to  mandel continuum strain
+
+    strainEngineering = mandel2voigt(arrayMandel)
+"""
 function getContinuumMandelStrain(ϵ_MandelContinuum::Array{T,1}) where T
     return get_P()*ϵ_MandelContinuum
 end
