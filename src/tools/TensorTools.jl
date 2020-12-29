@@ -118,7 +118,7 @@ Seventh Edition, O.C. Zienkiewicz, R.L. Taylor, D.D. Fox."
 
     frobeniusNorm_p2(array)
 """
-function doubleContract(array::Array{T,1}) where T
+function frobeniusNorm_p2(array::Array{T,1}) where T
     fN = doubleContract(array, array)
     return sqrt(fN[1])
 end
