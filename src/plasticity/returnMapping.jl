@@ -175,7 +175,7 @@ function returnMapping!(plasticVars::PlasticVars, model::PlasticModel,
             Θh = [model.𝚯(plasticVars.σ_mandel, plasticVars.q,  plasticVars, params);
             model.𝐡(plasticVars.σ_mandel, plasticVars.q, plasticVars, params)]
 
-            𝐈::Array{Float64, 2}  = [Isym zeros(model.ϵSize, model.αSize); zeros(model.αSize, model.ϵSize) 0.0]
+            𝐈::Array{Float64, 2}  = [Isym zeros(model.ϵSize, model.αSize); zeros(model.αSize, model.ϵSize) zeros(model.αSize, model.αSize)]
             CTemp::Array{Float64, 2} = A*𝐈 .- A*Θh*(fA*𝐈/(fA*Θh))
             plasticVars.Cᵀ .= get_Pᵀ()*CTemp[1:model.ϵSize, 1:model.ϵSize]*get_P()
         end

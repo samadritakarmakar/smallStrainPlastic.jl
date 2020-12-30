@@ -10,7 +10,7 @@ function testJ2()
     #plasticVars.C = SmallStrainPlastic.createVoigtElasticTensor(E, ν)
     plasticVars.C .= SmallStrainPlastic.getMandelElasticTensor(E, ν)
 
-    params_J2 = SmallStrainPlastic.initParams_j2(σ_y, 20.0e3)
+    params_J2 = SmallStrainPlastic.initParams_j2(σ_y, 0.0, 0.1)
 
     σₘArray::Array{Float64, 1} = zeros(0)
     𝐬Array::Array{Float64, 1} = zeros(0)
@@ -18,7 +18,7 @@ function testJ2()
     𝒆Array::Array{Float64, 1} = zeros(0)
     iArray::Array{Int64, 1} = zeros(0)
     #plasticVars.ϵ[1] += 20e-4
-    for i ∈ 1:20
+    for i ∈ 1:82
         if (i<=20)
             plasticVars.ϵ[1] += 1e-4
         elseif (i>20 && i<=55)
